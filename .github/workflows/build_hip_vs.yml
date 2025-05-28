@@ -1,27 +1,52 @@
-name: Build HIP VS
+# name: Build HIP VS
 
-on:
-  push:
-    branches: [ amd-staging, amd-mainline, release/** ]
-  pull_request:
-    branches: [ amd-staging, amd-mainline, release/** ]
+# on:
+#   push:
+#     branches: [ amd-staging, amd-mainline, release/**, windows-ci ]
+#   pull_request:
+#     branches: [ amd-staging, amd-mainline, release/** ]
 
-env:
-    ROCM_VERSION: 6.4
-    HIPSDK_INSTALLER_VERSION: 24.Q4
-    GPU_TARGETS: gfx803;gfx900;gfx906;gfx908;gfx90a;gfx942;gfx1030;gfx1100;gfx1101;gfx1102;gfx1201
+# env:
+#     PLATFORM_TOOLSET_VERSION: 6.2
+#     HIP_PATH: C:\Program Files\AMD\ROCm\6.2\
+#     HIPSDK_INSTALLER_VERSION: 24.Q4
 
-jobs:
-    build:
-        name: "Build Examples"
-        runs-on: windows-latest
-        steps:
-          - uses: actions/checkout@v4
-          - uses: microsoft/setup-msbuild@v2
-          - name: Install HIP SDK
-            shell: pwsh
-            run: |
-                  Invoke-WebRequest -Uri https://download.amd.com/developer/eula/rocm-hub/AMD-Software-PRO-Edition-${{ env.HIPSDK_INSTALLER_VERSION }}-Win10-Win11-For-HIP.exe -OutFile Setup.exe
-                  Start-Process Setup.exe -ArgumentList '-install','-log',"installer_log.txt" -NoNewWindow -Wait
-                  ls "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Microsoft\VC\v170\Platforms\x64\PlatformToolsets\"
-                  msbuild -ver
+# jobs:
+#     build:
+#         name: "Build Examples"
+#         runs-on: windows-latest
+#         steps:
+#           - uses: actions/checkout@v4
+#           - uses: microsoft/setup-msbuild@v2
+#           - name: Install HIP SDK
+#             shell: pwsh
+#             run: |
+#                   $ProgressPreference = 'SilentlyContinue'
+#                   Invoke-WebRequest -Uri https://download.amd.com/developer/eula/rocm-hub/AMD-Software-PRO-Edition-${{ env.HIPSDK_INSTALLER_VERSION }}-Win10-Win11-For-HIP.exe -OutFile Setup.exe
+#                   Start-Process Setup.exe -ArgumentList '-install','-log',"installer_log.txt" -NoNewWindow -Wait
+#                   echo $env:HIP_PATH
+#                   msbuild -ver
+#           - name: Install dependencies
+#             shell: pwsh
+#             run: |
+#                   python3 -m pip install rich
+#           - name: Check GUID
+#             shell: pwsh
+#             run: |
+#                   python3 Scripts/VisualStudio/check_vs_files.py
+#           - name: Build Debug x64
+#             shell: pwsh
+#             run: |
+#                   .\Scripts\VisualStudio\build.ps1 -Config Debug
+                  
+#           #         msbuild -maxCpuCount -detailedSummary -property:"Configuration=Debug;Platform=x64" ROCm-Examples-VS2022.sln
+#           - name: Build Release x64
+#             shell: pwsh
+#             run: |
+#                   .\Scripts\VisualStudio\build.ps1 -Config Release
+#           # - name: Build Portable
+#           #   shell: pwsh
+#           #   run: |
+#           #         msbuild -maxCpuCount -detailedSummary -property:Configuration=Debug;Platform=x64;PlatformToolset="HIP nvcc ${{ env.PLATFORM_TOOLSET_VERSION }}" ROCm-Examples-VS2017.sln
+          
+#           #  Get-ChildItem -Path . -Recurse -Filter "*.sln"  -Name  -Exclude @("vulkan_interop*", "ROCm-Examples*")
