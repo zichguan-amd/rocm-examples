@@ -138,7 +138,7 @@ class SlnChecker(GuidTools):
                     list_of_configurations.remove([config, mode])
                 except ValueError:
                     print(f'[red]Incorrect configuration in [yellow]{sln_file_path}[/yellow]:[/red]')
-                    print(f'    {config} = {mode}')
+                    print(f'    {guid}: {config} = {mode}')
                     self.error_counter += 1
         if len(list_of_configurations):
             print(f'[red]Missing configuration(s) in [yellow]{sln_file_path}[/yellow] for [yellow]{reference_guid}[/yellow]:[/red]')
@@ -165,7 +165,7 @@ class SlnChecker(GuidTools):
     
     # Get the full path of a solution file in the directory of the project file.
     def get_full_path(self, project_path: str, sln_single_path: str):
-        return os.path.dirname(project_path) + '/' + sln_single_path
+        return os.path.join(os.path.dirname(project_path), sln_single_path)
 
     # Collect and check project details in an SLN file.
     def parse_sln_file(self, sln_file_path: str) -> Dict[str, Dict[str, str]]:
