@@ -2,7 +2,7 @@ name: Build Applications VS
 
 on:
   push:
-    branches: [ amd-staging, amd-mainline, release/** ]
+    branches: [ amd-staging, amd-mainline, release/**, zichguan/** ]
     paths:
       - 'Applications/**'
       - '.github/workflows/**'
@@ -32,14 +32,30 @@ jobs:
           - name: Install HIP SDK
             shell: pwsh
             run: |
+                  $PSVersionTable
                   $ProgressPreference = 'SilentlyContinue'
+                  Write-Host "Downloading installer https://download.amd.com/developer/eula/rocm-hub/AMD-Software-PRO-Edition-${{ env.HIPSDK_INSTALLER_VERSION }}-Win10-Win11-For-HIP.exe"
                   Invoke-WebRequest -Uri https://download.amd.com/developer/eula/rocm-hub/AMD-Software-PRO-Edition-${{ env.HIPSDK_INSTALLER_VERSION }}-Win10-Win11-For-HIP.exe -OutFile Setup.exe
+                  Write-Host "Installing HIP SDK"
                   Start-Process Setup.exe -ArgumentList '-install','-log',"installer_log.txt" -NoNewWindow -Wait
+                  if (Test-Path -Path "${{ env.HIP_PATH }}") {
+                      Write-Host "HIP_PATH exists: ${{ env.HIP_PATH }}"
+                      Write-Host "HIP SDK installed successfully"
+                  } else {
+                      Exit 1
+                  }
                   msbuild -version
           - name: Install dependencies
             shell: pwsh
             run: |
+                  Write-Host "Installing Python packages"
                   python3 -m pip install rich
+                  Write-Host "Downloading VS platform toolset v141"
+                  Invoke-WebRequest -Uri https://aka.ms/vs/17/release/vs_buildtools.exe -OutFile vs_BuildTools.exe
+                  Write-Host "Installing VS platform toolset v141"
+                  Start-Process -FilePath ./vs_BuildTools.exe -ArgumentList `
+                      "--add", "Microsoft.VisualStudio.Component.VC.141", `
+                      "--quiet", "--norestart", "--force", "--wait" -Wait -PassThru
           - name: Check GUID
             shell: pwsh
             run: |
@@ -47,5 +63,6 @@ jobs:
           - name: Build ${{ matrix.config }} x64
             shell: pwsh
             run: |
-                  Set-Location Applications
-                  ..\Scripts\VisualStudio\build.ps1 -Config ${{ matrix.config }}
+                  msbuild Scripts\VisualStudio\build.proj -maxCpuCount -detailedSummary -property:"Category=Applications;Configuration=${{ matrix.config }};Platform=x64"
+                  Write-Host "msbuild returned: $LastExitCode"
+                  Exit $LastExitCode

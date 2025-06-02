@@ -2,7 +2,7 @@ name: Build Libraries VS
 
 on:
   push:
-    branches: [ amd-staging, amd-mainline, release/** ]
+    branches: [ amd-staging, amd-mainline, release/**, zichguan/** ]
     paths:
       - 'Libraries/**'
       - '.github/workflows/**'
@@ -25,6 +25,7 @@ jobs:
         strategy:
           matrix:
             config: [Debug, Release]
+            vsversion: [2017, 2019, 2022]
         runs-on: windows-latest
         steps:
           - uses: actions/checkout@v4
@@ -32,20 +33,34 @@ jobs:
           - name: Install HIP SDK
             shell: pwsh
             run: |
+                  $PSVersionTable
                   $ProgressPreference = 'SilentlyContinue'
+                  Write-Host "Downloading installer https://download.amd.com/developer/eula/rocm-hub/AMD-Software-PRO-Edition-${{ env.HIPSDK_INSTALLER_VERSION }}-Win10-Win11-For-HIP.exe"
                   Invoke-WebRequest -Uri https://download.amd.com/developer/eula/rocm-hub/AMD-Software-PRO-Edition-${{ env.HIPSDK_INSTALLER_VERSION }}-Win10-Win11-For-HIP.exe -OutFile Setup.exe
+                  Write-Host "Installing HIP SDK"
                   Start-Process Setup.exe -ArgumentList '-install','-log',"installer_log.txt" -NoNewWindow -Wait
+                  if (Test-Path -Path "${{ env.HIP_PATH }}") {
+                      Write-Host "HIP_PATH directory exists: ${{ env.HIP_PATH }}"
+                      Write-Host "HIP SDK installed successfully"
+                  } else {
+                      Write-Host "HIP_PATH directory DOES NOT exist: ${{ env.HIP_PATH }}"
+                      Write-Host "HIP SDK installation failed"
+                      Exit 1
+                  }
                   msbuild -version
           - name: Install dependencies
             shell: pwsh
             run: |
+                  Write-Host "Installing Python packages"
                   python3 -m pip install rich
           - name: Check GUID
             shell: pwsh
             run: |
                   python3 Scripts/VisualStudio/check_vs_files.py
-          - name: Build ${{ matrix.config }} x64
+          - name: Build ${{ matrix.config }} x64 ${{ matrix.vsversion }}
             shell: pwsh
             run: |
-                  Set-Location Libraries
-                  ..\Scripts\VisualStudio\build.ps1 -Config ${{ matrix.config }}
+                  Write-Host "Processor count: $env:NUMBER_OF_PROCESSORS"
+                  msbuild Scripts\VisualStudio\build.proj -maxCpuCount -detailedSummary -property:"Category=Libraries;Configuration=${{ matrix.config }};Platform=x64;VSVersion=${{ matrix.vsversion }}" -target:"Build"
+                  Write-Host "msbuild returned: $LastExitCode"
+                  Exit $LastExitCode

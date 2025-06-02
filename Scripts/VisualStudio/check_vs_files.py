@@ -165,7 +165,7 @@ class SlnChecker(GuidTools):
     
     # Get the full path of a solution file in the directory of the project file.
     def get_full_path(self, project_path: str, sln_single_path: str):
-        return os.path.join(os.path.dirname(project_path), sln_single_path)
+        return os.path.dirname(project_path) + '/' + sln_single_path
 
     # Collect and check project details in an SLN file.
     def parse_sln_file(self, sln_file_path: str) -> Dict[str, Dict[str, str]]:
@@ -203,6 +203,8 @@ class SlnChecker(GuidTools):
                     if path not in project_details.keys():
                         print(f'[red]Inconsistent path found in [yellow]{sln_path}[/yellow]:[/red]')
                         print(f'    {sln_single_path}')
+                        print(f'    {path}')
+                        print(f'    {project_details.keys()}')
                         self.error_counter += 1
                         path = project_path
                     project_details[path]['sln_guid'] = project_detail['guid']
