@@ -2,7 +2,7 @@ name: Build HIP-Basic VS
 
 on:
   push:
-    branches: [ amd-staging, amd-mainline, release/** ]
+    branches: [ amd-staging, amd-mainline, release/**, enable_vs_vulkan_ci ]
     paths:
       - 'HIP-Basic/**'
       - '.github/workflows/**'
@@ -18,6 +18,8 @@ env:
     PLATFORM_TOOLSET_VERSION: 6.2
     HIP_PATH: C:\Program Files\AMD\ROCm\6.2\
     HIPSDK_INSTALLER_VERSION: 24.Q4
+    VULKAN_SDK: C:\VulkanSDK\1.4.313.2\
+    GLFW_DIR: C:\glfw-3.4.bin.WIN64\
 
 jobs:
     build:
@@ -32,7 +34,21 @@ jobs:
           - name: Install dependencies
             shell: pwsh
             run: |
+                  $ProgressPreference = 'SilentlyContinue'
                   python3 -m pip install rich
+                  Write-Host "Downloading GLFW 3.4"
+                  Invoke-WebRequest -Uri https://github.com/glfw/glfw/releases/download/3.4/glfw-3.4.bin.WIN64.zip -OutFile glfw-3.4.bin.WIN64.zip
+                  Expand-Archive -Path glfw-3.4.bin.WIN64.zip -DestinationPath C:\ -PassThru
+                  Write-Host "Downloading Vulkan SDK 1.4.313.2"
+                  Invoke-WebRequest -Uri https://sdk.lunarg.com/sdk/download/1.4.313.2/windows/vulkansdk-windows-X64-1.4.313.2.exe -OutFile vulkansdk-windows-X64-1.4.313.2.exe
+                  Write-Host "Installing Vulkan SDK"
+                  Start-Process vulkansdk-windows-X64-1.4.313.2.exe -ArgumentList '--accept-licenses','--default-answer','--confirm-command','install' -NoNewWindow -Wait
+                  if (Test-Path -Path "${{ env.VULKAN_SDK }}\Bin\glslangValidator.exe" -PathType Leaf) {
+                      Write-Host "glslangValidator found"
+                  } else {
+                      Write-Host "glslangValidator not found"
+                      Exit 1
+                  }
           - name: Check GUID
             shell: pwsh
             run: |
