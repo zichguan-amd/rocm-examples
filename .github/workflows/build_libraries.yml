@@ -2,7 +2,7 @@ name: Build Libraries
 
 on:
   push:
-    branches: [ amd-staging, amd-mainline, release/** ]
+    branches: [ amd-staging, amd-mainline, release/**, selfhosted ]
     paths:
       - 'Libraries/**'
       - '.github/workflows/**'
@@ -20,7 +20,7 @@ env:
 jobs:
     build:
         name: "Build Libraries Examples"
-        runs-on: self-hosted
+        runs-on: ubuntu-latest
         container:
             image: ubuntu:22.04
         steps:
@@ -60,6 +60,6 @@ jobs:
               cmake --build . -j 4
 
           # Clean the workspace here since other jobs may not have the permissions to do so later
-          # (needed for self-hosted runners)
+          # (needed for ubuntu-latest runners)
           - name: Clean the workspace
             run: find $GITHUB_WORKSPACE -mindepth 1 -delete
