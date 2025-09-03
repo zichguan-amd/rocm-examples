@@ -20,6 +20,9 @@
   <ItemGroup>
     <ClCompile Include="main.hip" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="popcount.hpp" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
