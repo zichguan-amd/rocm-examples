@@ -89,16 +89,6 @@ jobs:
                   git apply (Get-ChildItem -File Scripts\VisualStudio\*.patch).FullName
                   Write-Host "Patches applied. Showing diff"
                   git diff
-          - name: Build HIP clang ${{ matrix.config }} x64
-            shell: pwsh
-            run: |
-                  Write-Host "Replace toolset $((Get-ChildItem -Recurse -File | Get-Content | Select-String -Pattern 'HIP clang .\..' | Select-Object -First 1).Matches.Value) with HIP clang ${{ env.PLATFORM_TOOLSET_VERSION }}"
-                  Get-ChildItem -Recurse -File | Where-Object { Select-String -Pattern 'HIP clang .\..' -Path $_ } | ForEach-Object {
-                    (Get-Content -Path $_.FullName) -replace 'HIP clang .\..', "HIP clang ${{ env.PLATFORM_TOOLSET_VERSION }}" | Set-Content -Path $_.FullName
-                  }
-                  msbuild Scripts\VisualStudio\build.proj -maxCpuCount -detailedSummary -property:"Category=Portable;Configuration=${{ matrix.config }};Platform=x64"
-                  Write-Host "msbuild returned: $LastExitCode"
-                  Exit $LastExitCode
           - name: Build HIP nvcc ${{ matrix.config }} x64
             shell: pwsh
             run: |
