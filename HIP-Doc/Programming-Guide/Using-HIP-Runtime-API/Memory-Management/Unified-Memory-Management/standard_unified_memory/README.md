@@ -24,6 +24,7 @@ environment variable `HSA_XNACK` must be set to `1`.
 
 * `hipDeviceSynchronize` is used to synchronize the device with the host.
 * `hipGetErrorString` transforms a HIP error code into a human-readable string.
+* `hipLaunchKernelGGL` is used to launch a kernel on the device.
 * The standard C++ operators `new` and `delete` are used to manage unified memory allocations.
 
 ## Demonstrated API Calls
@@ -34,3 +35,4 @@ environment variable `HSA_XNACK` must be set to `1`.
 
 * `hipDeviceSynchronize`
 * `hipGetErrorString`
+* `hipLaunchKernelGGL`
