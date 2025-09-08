@@ -2,9 +2,12 @@
   <PropertyGroup>
     <IntDir>$(SolutionDir)Build\$(Configuration)\$(MSBuildProjectName)\Intermediate\</IntDir>
     <OutDir>$(SolutionDir)Build\$(Configuration)\$(MSBuildProjectName)\</OutDir>
+    <ProgramDataBaseFileName>$(IntDir)$(MSBuildProjectName).pdb</ProgramDataBaseFileName>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <ProgramDataBaseFileName>$(IntDir)$(MSBuildProjectName).pdb</ProgramDataBaseFileName>
+      <!-- disable PDB generation -->
+      <DebugInformationFormat>None</DebugInformationFormat>
     </ClCompile>
+  </ItemDefinitionGroup>
 </Project>
