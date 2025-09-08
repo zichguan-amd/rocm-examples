@@ -51,6 +51,7 @@ jobs:
                   } else {
                       Write-Host "HIP_PATH directory DOES NOT exist: ${{ env.HIP_PATH }}"
                       Write-Host "HIP SDK installation failed"
+                      Get-Content "installer_log.txt"
                       Exit 1
                   }
                   msbuild -version
