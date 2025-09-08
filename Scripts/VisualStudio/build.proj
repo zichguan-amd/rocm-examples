@@ -6,28 +6,20 @@
   </PropertyGroup>
   <ItemGroup>
     <Solution Condition="'$(Category)'=='All'" Include="..\..\*\**\*.sln" Exclude="..\..\HIP-Basic\static_host_library\**\*.sln">
-      <Properties>IntDir=Build\$(Configuration)\%(Solution.Filename)\tmp\;OutDir=Build\$(Configuration)\%(Solution.Filename)\</Properties>
     </Solution>
     <Solution Condition="'$(Category)'=='Portable'" Include="..\..\ROCm-Examples-Portable-*.sln" Exclude="..\..\ROCm-Examples-Portable-VS2017.sln">
-      <Properties>IntDir=Build\$(Configuration)\%(Solution.Filename)\tmp\;OutDir=Build\$(Configuration)\%(Solution.Filename)\</Properties>
     </Solution>
     <Solution Condition="'$(Category)'=='Applications'" Include="..\..\Applications\**\*.sln">
-      <Properties>IntDir=Build\$(Configuration)\%(Solution.Filename)\tmp\;OutDir=Build\$(Configuration)\%(Solution.Filename)\</Properties>
     </Solution>
     <Solution Condition="'$(Category)'=='HIP-Basic'" Include="..\..\HIP-Basic\**\*.sln" Exclude="..\..\HIP-Basic\static_host_library\**\*.sln">
-      <Properties>IntDir=Build\$(Configuration)\%(Solution.Filename)\tmp\;OutDir=Build\$(Configuration)\%(Solution.Filename)\</Properties>
     </Solution>
     <Solution Condition="'$(Category)'=='HIP-Doc'" Include="..\..\HIP-Doc\**\*.sln">
-      <Properties>IntDir=Build\$(Configuration)\%(Solution.Filename)\tmp\;OutDir=Build\$(Configuration)\%(Solution.Filename)\</Properties>
     </Solution>
     <Solution Condition="'$(Category)'=='Libraries' and '$(VSVersion)'=='2017'" Include="..\..\Libraries\**\*_vs2017.sln">
-      <Properties>IntDir=Build\$(Configuration)\%(Solution.Filename)\tmp\;OutDir=Build\$(Configuration)\%(Solution.Filename)\</Properties>
     </Solution>
     <Solution Condition="'$(Category)'=='Libraries' and '$(VSVersion)'=='2019'" Include="..\..\Libraries\**\*_vs2019.sln">
-      <Properties>IntDir=Build\$(Configuration)\%(Solution.Filename)\tmp\;OutDir=Build\$(Configuration)\%(Solution.Filename)\</Properties>
     </Solution>
     <Solution Condition="'$(Category)'=='Libraries' and '$(VSVersion)'=='2022'" Include="..\..\Libraries\**\*_vs2022.sln">
-      <Properties>IntDir=Build\$(Configuration)\%(Solution.Filename)\tmp\;OutDir=Build\$(Configuration)\%(Solution.Filename)\</Properties>
     </Solution>
   </ItemGroup>
   <Target Name="Build">

@@ -1,0 +1,10 @@
+<Project>
+  <PropertyGroup>
+    <IntDir>$(SolutionDir)Build\$(Configuration)\$(MSBuildProjectName)\Intermediate\</IntDir>
+    <OutDir>$(SolutionDir)Build\$(Configuration)\$(MSBuildProjectName)\</OutDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <ProgramDataBaseFileName>$(IntDir)$(MSBuildProjectName).pdb</ProgramDataBaseFileName>
+    </ClCompile>
+</Project>

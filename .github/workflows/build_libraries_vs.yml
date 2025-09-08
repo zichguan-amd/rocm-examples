@@ -2,7 +2,7 @@ name: Build Libraries VS
 
 on:
   push:
-    branches: [ amd-staging, amd-mainline, release/** ]
+    branches: [ amd-staging, amd-mainline, release/**, zichguan/** ]
     paths:
       - 'Libraries/**'
       - '.github/workflows/**'
@@ -43,18 +43,18 @@ jobs:
             run: |
                   $ProgressPreference = 'SilentlyContinue'
                   Write-Host "Downloading installer https://download.amd.com/developer/eula/rocm-hub/AMD-Software-PRO-Edition-${{ env.HIPSDK_INSTALLER_VERSION }}-Win10-Win11-For-HIP.exe"
-                  Invoke-WebRequest -Uri https://download.amd.com/developer/eula/rocm-hub/AMD-Software-PRO-Edition-${{ env.HIPSDK_INSTALLER_VERSION }}-Win10-Win11-For-HIP.exe -OutFile Setup.exe
+                  Invoke-WebRequest -Uri https://download.amd.com/developer/eula/rocm-hub/AMD-Software-PRO-Edition-${{ env.HIPSDK_INSTALLER_VERSION }}-Win10-Win11-For-HIP.exe -OutFile HIPSDK.exe
                   Write-Host "Installing HIP SDK"
-                  Start-Process Setup.exe -ArgumentList '-install','-log',"installer_log.txt" -NoNewWindow -Wait
+                  Start-Process HIPSDK.exe -ArgumentList '-install','-log','installer_log.txt' -NoNewWindow -Wait
                   if (Test-Path -Path "${{ env.HIP_PATH }}") {
                       Write-Host "HIP_PATH directory exists: ${{ env.HIP_PATH }}"
                       Write-Host "HIP SDK installed successfully"
                   } else {
                       Write-Host "HIP_PATH directory DOES NOT exist: ${{ env.HIP_PATH }}"
                       Write-Host "HIP SDK installation failed"
+                      Get-Content "installer_log.txt"
                       Exit 1
                   }
-                  msbuild -version
           - name: Build ${{ matrix.config }} x64 ${{ matrix.vsversion }}
             shell: pwsh
             run: |
@@ -62,6 +62,8 @@ jobs:
                   Get-ChildItem -Recurse -File | Where-Object { Select-String -Pattern 'HIP clang 6\..' -Path $_ } | ForEach-Object {
                     (Get-Content -Path $_.FullName) -replace 'HIP clang 6\..', "HIP clang ${{ env.PLATFORM_TOOLSET_VERSION }}" | Set-Content -Path $_.FullName
                   }
+                  Copy-Item "Scripts\VisualStudio\Directory.build.props" "Directory.Build.props" -Force
+                  Write-Host "Copied Directory.build.props to root level"
                   msbuild Scripts\VisualStudio\build.proj -maxCpuCount -detailedSummary -property:"Category=Libraries;Configuration=${{ matrix.config }};Platform=x64;VSVersion=${{ matrix.vsversion }}" -target:"Build"
                   Write-Host "msbuild returned: $LastExitCode"
                   Exit $LastExitCode
