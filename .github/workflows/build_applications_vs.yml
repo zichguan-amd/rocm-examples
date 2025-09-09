@@ -69,8 +69,6 @@ jobs:
                   Get-ChildItem -Recurse -File | Where-Object { Select-String -Pattern 'HIP clang 6\..' -Path $_ } | ForEach-Object {
                     (Get-Content -Path $_.FullName) -replace 'HIP clang 6\..', "HIP clang ${{ env.PLATFORM_TOOLSET_VERSION }}" | Set-Content -Path $_.FullName
                   }
-                  Copy-Item "Scripts\VisualStudio\Directory.build.props" "Directory.Build.props" -Force
-                  Write-Host "Copied Directory.build.props to root level"
                   msbuild Scripts\VisualStudio\build.proj -maxCpuCount -detailedSummary -property:"Category=Applications;Configuration=${{ matrix.config }};Platform=x64"
                   Write-Host "msbuild returned: $LastExitCode"
                   Exit $LastExitCode

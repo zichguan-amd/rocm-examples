@@ -96,8 +96,6 @@ jobs:
                   Get-ChildItem -Recurse -File | Where-Object { Select-String -Pattern 'HIP clang .\..' -Path $_ } | ForEach-Object {
                     (Get-Content -Path $_.FullName) -replace 'HIP clang .\..', "HIP nvcc ${{ env.PLATFORM_TOOLSET_VERSION }}" | Set-Content -Path $_.FullName
                   }
-                  Copy-Item "Scripts\VisualStudio\Directory.build.props" "Directory.Build.props" -Force
-                  Write-Host "Copied Directory.build.props to root level"
-                  msbuild Scripts\VisualStudio\build.proj -maxCpuCount -detailedSummary -property:"Category=Portable;Configuration=${{ matrix.config }};Platform=x64"
+                  msbuild ROCm-Examples-Portable-VS2022.sln -maxCpuCount -detailedSummary -property:"Configuration=${{ matrix.config }};Platform=x64"
                   Write-Host "msbuild returned: $LastExitCode"
                   Exit $LastExitCode
