@@ -20,8 +20,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "popcount.hpp"
-
 #include <hip/hip_runtime.h>
 
 #include <cstddef>
@@ -116,9 +114,9 @@ void generate_and_copy_mask(
             int mask_index = i * numberOfWarp + j;
             mask[mask_index] = distr(eng);
             if(warpSizeHost == 32)
-                count += popcount(static_cast<std::uint32_t>(mask[mask_index]));
+                count += __builtin_popcount(mask[mask_index]);
             else
-                count += popcount(mask[mask_index]);
+                count += __builtin_popcountll(mask[mask_index]);
         }
         vectorExpected[i]= count;
     }

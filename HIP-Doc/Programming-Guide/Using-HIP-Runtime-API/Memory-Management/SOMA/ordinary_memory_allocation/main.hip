@@ -51,6 +51,9 @@ __global__ void myKernel(int* data, std::size_t numElements)
 
 int main()
 {
+    // Initialize HIP.
+    HIP_CHECK(hipInit(0));
+
     // Allocate memory.
     constexpr std::size_t numElements = 1024;
     int* devData;

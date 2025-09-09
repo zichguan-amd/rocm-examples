@@ -52,6 +52,7 @@ This example should be compared to the [graph creation example](../graph_creatio
 * `hipGraphInstantiate`
 * `hipGraphLaunch`
 * `hipMallocAsync`
+* `hipLaunchKernelGGL`
 * `hipMemcpyAsync`
 * `hipStreamBeginCapture`
 * `hipStreamCreate`

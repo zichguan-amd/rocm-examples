@@ -37,4 +37,5 @@ This example should be compared to the [asynchronous kernel execution example](.
 * `hipFree`
 * `hipGetErrorString`
 * `hipMalloc`
+* `hipLaunchKernelGGL`
 * `hipMemcpy`

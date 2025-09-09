@@ -24,6 +24,7 @@ information, please refer to the
 * `hipDeviceSynchronize` is used to synchronize the device with the host.
 * `hipFree` is used to free previously allocated unified memory.
 * `hipGetErrorString` transforms a HIP error code into a human-readable string.
+* `hipLaunchKernelGGL` is used to launch a kernel on the device.
 * `hipMallocManaged` is used to allocate unified memory.
 * `hipMemPrefetchAsyc` is used to move data to the device before it is needed.
 
@@ -36,5 +37,6 @@ information, please refer to the
 * `hipDeviceSynchronize`
 * `hipFree`
 * `hipGetErrorString`
+* `hipLaunchKernelGGL`
 * `hipMallocManaged`
 * `hipMemPrefetchAsync`
