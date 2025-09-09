@@ -56,7 +56,7 @@ jobs:
                   Write-Host "Downloading installer https://developer.download.nvidia.com/compute/cuda/${{ env.CUDA_VERSION }}/local_installers/cuda_${{ env.CUDA_VERSION }}_${{ env.CUDA_INSTALLER_VERSION }}_windows.exe"
                   Invoke-WebRequest -Uri https://developer.download.nvidia.com/compute/cuda/${{ env.CUDA_VERSION }}/local_installers/cuda_${{ env.CUDA_VERSION }}_${{ env.CUDA_INSTALLER_VERSION }}_windows.exe -OutFile CUDAToolkit.exe
                   Write-Host "Installing CUDA Toolkit"
-                  Start-Process CUDAToolkit.exe -ArgumentList '-s','-n' -NoNewWindow -Wait
+                  Start-Process CUDAToolkit.exe -ArgumentList '-s cuda_profiler_api_12.8 cudart_12.8 nvcc_12.8 nvrtc_dev_12.8 cublas_dev_12.8 cufft_dev_12.8 curand_dev_12.8 cusolver_dev_12.8 cusparse_dev_12.8 visual_studio_integration_12.8','-n' -NoNewWindow -Wait
                   if (Test-Path -Path "${{ env.CUDA_PATH }}") {
                       Write-Host "CUDA_PATH directory exists: ${{ env.CUDA_PATH }}"
                       Write-Host "CUDA Toolkit installed successfully"
