@@ -72,14 +72,15 @@ jobs:
                   Write-Host "Downloading installer https://download.amd.com/developer/eula/rocm-hub/AMD-Software-PRO-Edition-${{ env.HIPSDK_INSTALLER_VERSION }}-Win10-Win11-For-HIP.exe"
                   Invoke-WebRequest -Uri https://download.amd.com/developer/eula/rocm-hub/AMD-Software-PRO-Edition-${{ env.HIPSDK_INSTALLER_VERSION }}-Win10-Win11-For-HIP.exe -OutFile HIPSDK.exe
                   Write-Host "Installing HIP SDK"
-                  Start-Process HIPSDK.exe -ArgumentList '-install','-log','installer_log.txt' -NoNewWindow -Wait
+                  Start-Process HIPSDK.exe -ArgumentList '-install','-log',"$((Get-Location).Path)\installer_log.txt" -NoNewWindow -Wait
+                  Write-Host "Installer log:"
+                  Get-Content "installer_log.txt"
                   if (Test-Path -Path "${{ env.HIP_PATH }}") {
                       Write-Host "HIP_PATH directory exists: ${{ env.HIP_PATH }}"
                       Write-Host "HIP SDK installed successfully"
                   } else {
                       Write-Host "HIP_PATH directory DOES NOT exist: ${{ env.HIP_PATH }}"
                       Write-Host "HIP SDK installation failed"
-                      Get-Content "installer_log.txt"
                       Exit 1
                   }
           - name: Apply patch
