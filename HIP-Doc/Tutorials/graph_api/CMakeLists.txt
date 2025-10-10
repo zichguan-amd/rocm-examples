@@ -20,26 +20,23 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
-project(hipTensor_examples LANGUAGES CXX)
-include(CTest)
+cmake_minimum_required(VERSION 3.21)
 
-file(RELATIVE_PATH folder_bin ${CMAKE_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/${folder_bin})
+project(hip_graph_api_tutorial LANGUAGES CXX)
 
-# see https://rocm.docs.amd.com/projects/hipTensor/en/latest/install/installation.html#gpu-support
-set(HIPTENSOR_SUPPORTED_ARCH gfx908 gfx90a gfx942 gfx950)
+include("${CMAKE_CURRENT_LIST_DIR}/../../../Common/FindFilesystem.cmake")
 
-foreach(ARCH ${CMAKE_HIP_ARCHITECTURES})
-    if(NOT ARCH IN_LIST HIPTENSOR_SUPPORTED_ARCH)
-        message(STATUS "hipTensor does not support architecture: ${ARCH}, not building hipTensor examples")
-        return()
-    endif()
-endforeach()
+include("${CMAKE_CURRENT_LIST_DIR}/../../../Common/HipPlatform.cmake")
+select_gpu_language()
+enable_language(${ROCM_EXAMPLES_GPU_LANGUAGE})
+select_hip_platform()
 
 if(CMAKE_SYSTEM_NAME MATCHES "Windows")
-    message(STATUS "hipTensor examples are only available on Linux")
-    return()
+    set(ROCM_ROOT
+        "$ENV{HIP_PATH}"
+        CACHE PATH
+        "Root directory of the ROCm installation"
+    )
 else()
     set(ROCM_ROOT
         "/opt/rocm"
@@ -50,15 +47,4 @@ endif()
 
 list(APPEND CMAKE_PREFIX_PATH "${ROCM_ROOT}")
 
-find_package(hiptensor)
-if(NOT hiptensor_FOUND)
-    message(
-        STATUS
-        "hipTensor could not be found, not building hipTensor examples"
-    )
-    return(1)
-endif()
-
-add_subdirectory(contraction)
-add_subdirectory(elementwise)
-add_subdirectory(reduction)
+add_subdirectory(src)

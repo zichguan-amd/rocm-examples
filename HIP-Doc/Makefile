@@ -22,7 +22,8 @@
 
 SUBDIRECTORIES := \
 	Programming-Guide \
-	Reference
+	Reference \
+	Tutorials
 
 all: $(SUBDIRECTORIES)
 
