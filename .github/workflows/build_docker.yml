@@ -11,7 +11,7 @@ on:
     paths:
       - 'Dockerfiles/**'
       - '.github/workflows/**'
-  
+
 jobs:  
     find-dockerfiles:  
       name: Find Dockerfiles
