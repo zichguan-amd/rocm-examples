@@ -58,6 +58,7 @@ endif()
 list(APPEND CMAKE_PREFIX_PATH "${ROCM_ROOT}")
 
 add_executable(${example_name} main.hip ../../External/glad/glad.cpp)
+set_source_files_properties(../../External/glad/glad.cpp PROPERTIES COMPILE_OPTIONS "-fPIC")
 
 set(include_dirs "../../Common" "../../External")
 if(GPU_RUNTIME STREQUAL "CUDA")

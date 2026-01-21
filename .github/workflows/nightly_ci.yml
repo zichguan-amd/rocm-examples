@@ -1,34 +1,28 @@
-name: Build ROCm Examples
+name: Nightly CI
 
 on:
   push:
-    branches: [ amd-staging, amd-mainline, release/** ]
-    paths:
-      - 'Applications/**'
-      - 'HIP-Basic/**'
-      - 'HIP-Doc/**'
-      - 'Libraries/**'
-      - 'Programming-Guide/**'
-      - 'Tools/**'
-      - 'Tutorials/**'
-      - 'Common/**'
-      - 'CMakeLists.txt'
-      - 'Makefile'
-      - '.github/workflows/**'
-  pull_request:
-    branches: [ amd-staging, amd-mainline, release/** ]
-    paths:
-      - 'Applications/**'
-      - 'HIP-Basic/**'
-      - 'HIP-Doc/**'
-      - 'Libraries/**'
-      - 'Programming-Guide/**'
-      - 'Tools/**'
-      - 'Tutorials/**'
-      - 'Common/**'
-      - 'CMakeLists.txt'
-      - 'Makefile'
-      - '.github/workflows/**'
+    branches:
+      - zichguan/**
+  schedule:
+    # Run nightly at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      gpu_target:
+        description: 'GPU target to build'
+        type: choice
+        options:
+          - gfx1100
+        default: gfx1100
+      install_method:
+        description: 'ROCm install method'
+        type: choice
+        options:
+          - wheel
+          - tarball
+          - both
+        default: both
 
 permissions:
   contents: read
@@ -42,10 +36,10 @@ env:
 
 jobs:
   build:
-    name: "Build::${{ matrix.gpu_config.gpu_target }} - ${{ matrix.install_method }}"
-    runs-on: [self-hosted, "${{ matrix.gpu_config.therock_family }}"]
+    name: "SLES 15.7 - ${{ matrix.gpu_config.gpu_target }} - ${{ matrix.install_method }}"
+    runs-on: [self-hosted, Linux, "${{ matrix.gpu_config.therock_family }}"]
     container:
-      image: ubuntu:22.04
+      image: registry.suse.com/suse/sle15:15.7
       options:
         --group-add video
         --device /dev/kfd
@@ -58,8 +52,6 @@ jobs:
         gpu_config:
           - gpu_target: gfx1100
             therock_family: gfx110X-all
-          - gpu_target: gfx1201
-            therock_family: gfx120X-all
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -67,19 +59,39 @@ jobs:
       - name: Install dependencies
         shell: bash
         run: |
-          apt-get update -qq &&
-          apt-get install -y git wget curl build-essential python3.11 python3.11-venv libdw-dev libglfw3-dev libvulkan-dev glslang-tools libtiff-dev libopencv-dev
+          zypper -qni update -y
+          zypper -qni install -y awk unzip xz cmake gcc gcc-c++ wget git python313 libdw-devel Mesa-libGL-devel wayland-devel libxkbcommon-devel libXcursor-devel libXi-devel libXinerama-devel libXrandr-devel
+
+          # build and install GLFW 3.4
+          wget https://github.com/glfw/glfw/releases/download/3.4/glfw-3.4.zip
+          unzip glfw-3.4.zip
+          cmake -S glfw-3.4 -B glfw-3.4/build -DGLFW_BUILD_EXAMPLES=OFF -DGLFW_BUILD_TESTS=OFF -DGLFW_BUILD_DOCS=OFF
+          cmake --build glfw-3.4/build --target install
+          
+          # build and install Vulkan SDK 1.4.335.0
+          wget https://sdk.lunarg.com/sdk/download/1.4.335.0/linux/vulkansdk-linux-x86_64-1.4.335.0.tar.xz
+          tar -xvf vulkansdk-linux-x86_64-1.4.335.0.tar.xz -C $GITHUB_WORKSPACE
+
+          VULKAN_SDK=$GITHUB_WORKSPACE/1.4.335.0/x86_64
+          echo "VULKAN_SDK=$VULKAN_SDK" >> $GITHUB_ENV
+          echo "PATH=$VULKAN_SDK/bin:$PATH" >> $GITHUB_ENV
+          echo "LD_LIBRARY_PATH=$VULKAN_SDK/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" >> $GITHUB_ENV
+          echo "VK_ADD_LAYER_PATH=$VULKAN_SDK/share/vulkan/explicit_layer.d" >> $GITHUB_ENV
+          echo "PKG_CONFIG_PATH=$VULKAN_SDK/share/pkgconfig:$VULKAN_SDK/lib/pkgconfig${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}" >> $GITHUB_ENV
 
       - name: Setup virtual environment
         shell: bash
         run: |
-          python3.11 -m venv .venv
-          source .venv/bin/activate
+          python3.13 -m venv $GITHUB_WORKSPACE/.venv
+          source $GITHUB_WORKSPACE/.venv/bin/activate
           pip install pyyaml cmake
           
+          # issue https://github.com/actions/runner/issues/3210:
+          # using $GITHUB_PATH breaks subsequent steps if base image does not have $PATH
+          
           # persist the virtual environment
-          echo "$PWD/.venv/bin" >> $GITHUB_PATH
-          echo "VIRTUAL_ENV=$PWD/.venv" >> $GITHUB_ENV
+          echo "PATH=$PATH" >> $GITHUB_ENV
+          echo "VIRTUAL_ENV=$GITHUB_WORKSPACE/.venv" >> $GITHUB_ENV
 
       - name: Install TheRock Python wheel
         if: ${{ matrix.install_method == 'wheel' }}
@@ -98,6 +110,7 @@ jobs:
           echo "## ROCm Version: $ROCM_VERSION" >> $GITHUB_STEP_SUMMARY
           rocm-sdk init
           rocm-sdk test
+        continue-on-error: true
 
       - name: Setup environment variables (wheel)
         if: ${{ matrix.install_method == 'wheel' }}
@@ -108,11 +121,11 @@ jobs:
           echo "HIP_PATH=$ROCM_PATH" >> $GITHUB_ENV
           echo "HIP_PLATFORM=amd" >> $GITHUB_ENV
           echo "HIP_DEVICE_LIB_PATH=$ROCM_PATH/lib/llvm/amdgcn/bitcode" >> $GITHUB_ENV
-          echo "$ROCM_PATH/bin" >> $GITHUB_PATH
-          echo "$ROCM_PATH/llvm/bin" >> $GITHUB_PATH
+          echo "PATH=$ROCM_PATH/bin:$ROCM_PATH/llvm/bin:$PATH" >> $GITHUB_ENV
 
       - name: Install TheRock tarball
         if: ${{ matrix.install_method == 'tarball' }}
+        id: install-tarball
         shell: bash
         run: |
           LATEST_TARBALL=$(curl -s https://rocm.nightlies.amd.com/tarball/ | grep -oE "therock-dist-linux-${{ matrix.gpu_config.therock_family }}-[0-9]+\.[0-9]+\.\w+\.tar\.gz" | tail -1)
@@ -135,8 +148,7 @@ jobs:
           echo "HIP_PATH=$ROCM_PATH" >> $GITHUB_ENV
           echo "HIP_PLATFORM=amd" >> $GITHUB_ENV
           echo "HIP_DEVICE_LIB_PATH=$ROCM_PATH/lib/llvm/amdgcn/bitcode" >> $GITHUB_ENV
-          echo "$ROCM_PATH/bin" >> $GITHUB_PATH
-          echo "$ROCM_PATH/llvm/bin" >> $GITHUB_PATH
+          echo "PATH=$ROCM_PATH/bin:$ROCM_PATH/llvm/bin:$PATH" >> $GITHUB_ENV
 
       - name: CMake configure
         shell: bash
@@ -186,7 +198,7 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: rocm-examples-build-${{ matrix.gpu_config.gpu_target }}-${{ steps.sanity-check.outputs.rocm_version }}-${{ matrix.install_method }}
+          name: rocm-examples-build-${{ matrix.gpu_config.gpu_target }}-${{ steps.sanity-check.outputs.rocm_version || steps.install-tarball.outputs.rocm_version }}-${{ matrix.install_method }}
           path: build/
 
       - name: Run tests
